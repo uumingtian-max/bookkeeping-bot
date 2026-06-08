@@ -947,7 +947,19 @@ def main():
     loop = asyncio.new_event_loop()
     loop.create_task(reminder_checker(app))
 
-    print("🤖 超级记账机器人 v2.0 启动...")
+    # Simple HTTP health-check for Railway (port from env or 8080)
+    PORT = int(os.environ.get("PORT", 8080))
+    from http.server import HTTPServer, BaseHTTPRequestHandler
+    class HealthHandler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"OK")
+        def log_message(self, *a): pass
+    server = HTTPServer(("0.0.0.0", PORT), HealthHandler)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+
+    print(f"🤖 超级记账机器人 v2.0 启动... (健康检查端口: {PORT})")
     app.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == "__main__":

@@ -2,11 +2,10 @@ name = "bookkeeping-bot"
 main = "worker.js"
 compatibility_date = "2025-06-09"
 
-[[d1_databases]]
-binding = "DB"
-database_name = "bookkeeping-db"
-database_id = ""
-
-[env]
-BOT_TOKEN = "8638712861:AAFaWkeMTfQp07cCrUi3YX8QFWMGf-7_gGM"
+[vars]
+BOT_TOKEN = "8638712861:AAFaWkeCAfQp07cCrUi3YX8QFWMGf-7_gGM"
 ADMIN_IDS = ""
+
+[[kv_namespaces]]
+binding = "KV"
+id = ""

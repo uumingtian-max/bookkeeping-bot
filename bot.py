@@ -395,19 +395,26 @@ async def delete_bill(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ---- Exchange Rate ----
 async def show_rate(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    mode = "🔧手动" if RATE_MANUAL else "🤖自动"
     raw, display = get_live_rate()
     current = get_rate()
-    msg = f"💱 *实时汇率* [{mode}]\n"
-    if raw:
-        age = int(time.time() - RATE_CACHE["time"])
-        msg += f"裸价: 1 USDT = {raw:.4f} CNY\n"
-        msg += f"报价: 1 USDT = *{current:.4f} CNY*\n"
-        msg += f"上浮 +{SPREAD} | 缓存 {age}s"
+    age = int(time.time() - RATE_CACHE["time"]) if raw else 0
+    admin = is_admin(update.effective_user.id)
+    
+    if admin:
+        # 管理员能看到裸价和上浮
+        mode = "🔧手动" if RATE_MANUAL else "🤖自动"
+        msg = f"💱 *实时汇率* [{mode}]\n"
+        if raw:
+            msg += f"裸价: 1 USDT = {raw:.4f} CNY\n"
+            msg += f"报价: 1 USDT = *{current:.4f} CNY*\n"
+            msg += f"上浮 +{SPREAD} | 缓存 {age}s\n\n"
+            msg += "🔧 `/汇率更` 自动 | `/汇率设 7.3` 手动"
+        else:
+            msg += f"1 USDT = *{current:.4f} CNY*\n⚠️ 实时获取失败"
     else:
-        msg += f"1 USDT = *{current:.4f} CNY*\n⚠️ 实时获取失败"
-    if is_admin(update.effective_user.id):
-        msg += "\n\n🔧 `/汇率更` 自动 | `/汇率设 7.3` 手动"
+        # 普通用户只看到最终报价
+        msg = f"💱 1 USDT = *{current:.4f}* CNY"
+    
     kb = InlineKeyboardMarkup([[InlineKeyboardButton("🔄 刷新汇率", callback_data="refresh_rate")]])
     await update.message.reply_text(msg, parse_mode=ParseMode.MARKDOWN, reply_markup=kb)
 
